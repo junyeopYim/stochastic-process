@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # 매주 월요일 00:17 UTC: 쉬는 주에도 의존성·노트북 부패를 감지
+    - cron: "17 0 * * 1"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SPKIT_FAST: "1"
+      MPLBACKEND: "Agg"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install project
+        run: uv sync --frozen
+      - name: Lint
+        run: uv run ruff check src tests && uv run ruff format --check src tests
+      - name: Unit tests
+        run: uv run pytest
+      - name: Execute notebooks (FAST mode)
+        run: uv run pytest --nbmake --nbmake-timeout=600 -p no:cacheprovider notebooks/

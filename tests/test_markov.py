@@ -219,3 +219,15 @@ def test_extinction_probability_cases():
     np.testing.assert_allclose(extinction_probability([0.5, 0.5]), 1.0, atol=1e-6)
     np.testing.assert_allclose(extinction_probability([0.25, 0.25, 0.5]), 0.5, atol=1e-9)
     np.testing.assert_allclose(extinction_probability([0.0, 0.0, 1.0]), 0.0)
+
+
+def test_extinction_probability_critical_and_subcritical_return_one() -> None:
+    # 임계(m = 1): 반복만으로는 1 에 도달하지 못하므로 정리로 처리해야 한다
+    assert extinction_probability([0.25, 0.5, 0.25]) == 1.0
+    from scipy.stats import poisson
+
+    assert extinction_probability(poisson.pmf(np.arange(41), 1.0)) == 1.0
+    # 아임계
+    assert extinction_probability([0.5, 0.3, 0.2]) == 1.0
+    # 초임계: pgf 고정점 (0.25 + 0.25 s + 0.5 s^2 = s -> s = 1/2)
+    np.testing.assert_allclose(extinction_probability([0.25, 0.25, 0.5]), 0.5, atol=1e-10)

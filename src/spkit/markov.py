@@ -540,10 +540,17 @@ def extinction_probability(
     Returns
     -------
     float
-        Smallest fixed point of ``s -> Σ p_k s^k`` in ``[0, 1]``.
+        Smallest fixed point of ``s -> Σ p_k s^k`` in ``[0, 1]``; exactly ``1.0`` when the
+        offspring mean is ``<= 1`` (subcritical/critical case, by the extinction theorem).
     """
     pmf = np.asarray(offspring_pmf, dtype=float)
     pmf = pmf / pmf.sum()
+    mean = float(np.dot(np.arange(len(pmf)), pmf))
+    # 정리: m <= 1 (그리고 p_1 < 1) 이면 멸종 확률은 정확히 1. 임계(m = 1) 경우 반복은
+    # 2/(sigma^2 n) 속도로만 수렴하므로 반복 대신 정리를 그대로 쓴다.
+    p_one = float(pmf[1]) if len(pmf) > 1 else 0.0
+    if mean <= 1.0 and p_one < 1.0:
+        return 1.0
     s = 0.0
     for _ in range(max_iter):
         s_new = float(np.polynomial.polynomial.polyval(s, pmf))

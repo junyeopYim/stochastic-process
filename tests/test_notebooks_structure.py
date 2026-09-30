@@ -26,8 +26,10 @@ REQUIRED_HEADINGS = {
 FORBIDDEN_CODE = [
     (re.compile(r"np\.random\.seed\("), "np.random.seed 대신 rng_for()를 쓰세요"),
     (re.compile(r"RandomState\("), "RandomState 대신 numpy Generator를 쓰세요"),
-    (re.compile(r"np\.random\.(rand|randn|randint|choice|normal|uniform)\("),
-     "레거시 np.random.* 대신 rng.* 를 쓰세요"),
+    (
+        re.compile(r"np\.random\.(rand|randn|randint|choice|normal|uniform)\("),
+        "레거시 np.random.* 대신 rng.* 를 쓰세요",
+    ),
 ]
 
 
@@ -61,7 +63,9 @@ def test_notebook_follows_template(path: Path) -> None:
     first = md[0].lstrip()
     assert first.startswith(f"# {nb_id}"), f"첫 셀은 '# {nb_id} · 제목' 헤더여야 합니다"
 
-    headings = "\n".join(line for cell in md for line in cell.splitlines() if line.startswith("## "))
+    headings = "\n".join(
+        line for cell in md for line in cell.splitlines() if line.startswith("## ")
+    )
     for key in REQUIRED_HEADINGS[_kind(nb_id)]:
         assert key in headings, f"필수 섹션 헤딩 누락: '{key}'"
 
